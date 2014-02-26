@@ -1,0 +1,279 @@
+
+/**
+ * HeaderSLL.java
+ * 
+ * Implementation of singly linked list with a dummy head.
+ * Modifying all the methods to incorporate a head with no data and a "currentPred"
+ * reference that actually refers to the element before the current.
+ * 
+ * WARNING: This implementation is guaranteed to work only if always given
+ * immutable objects (or at least ones that do not change).
+ * 
+ * @author Kartik Menon
+ * @author THC
+ * @author Scot Drysdale converted to Java
+ * @author Scot Drysdale, THC have made a number of modifications.
+ * @author Scot Drysdale most recently modified on 1/12/2011
+ */
+public class HeaderSLL<T> implements CS10LinkedList<T> {
+  // Instance variables.
+  private Element<T> currentPred;    // right before the current position in the list
+  private Element<T> head;       // head of list
+  
+  /**
+   * A private class inner representing the elements in the list.
+   */
+  private static class Element<T> {
+    // Because this is a private inner class, these can't be seen from outside SLL.
+    private T data;         // reference to data stored in this element
+    private Element<T> next;   // reference to next item in list
+    
+    /**
+     * Constructor for a linked list element, given an object.
+     * @param obj the data stored in the element.
+     */
+    public Element(T obj) {
+      next = null;          // no element after this one, yet
+      data = obj;           // OK to copy reference, since obj references an immutable object
+    }
+
+    /**
+     * 
+     * @return the String representation of a linked list element.
+     */
+    public String toString() {
+      return data.toString();
+    }
+  }
+
+  /**
+   * Constructor to create an empty singly linked list.
+   * head created as empty reference
+   */
+  public HeaderSLL() {
+   head = new Element<T>(null);
+    clear();
+  }
+
+  /**
+   * right after head is null (i.e., nothing exists in the list)
+   */
+  public void clear() {
+    // Set the element after head to be null.
+    head.next  = null;
+    currentPred = head;
+
+  }
+
+  /**
+   * Adds a new object after the current.
+   * If currentPred is the last item in the list, currentPred.next will be null,
+   * so just set currentPred.next to x.
+   * @param T object
+   */
+  public void add(T obj) {
+    Element<T> x = new Element<T>(obj);   // allocate a new element
+    
+    // having a dummy head simplifies adding objects into linked list.
+    // only need to change two references, because you will always have a 'currentPred'
+    if (currentPred.next != null) // if it's not the last element in the list 
+     {
+     x.next = currentPred.next.next;
+     currentPred.next.next = x;
+    }
+    
+    // if currentPred is the last item in the linked list, then just set its next to x.
+    else {
+     currentPred.next = x;
+    }
+    // setting the current to x
+    for (currentPred = head; currentPred.next.data != x.data; currentPred = currentPred.next);
+    currentPred.next = x;              
+  }
+
+  /**
+   * Removes an object in the current position.
+   */
+  public void remove() {
+ 
+    if (!hasCurrent()) {          // check whether current element exists
+      System.err.println("No current item");
+      return;
+    }
+    // if it's the last item in the list
+    if (currentPred.next.next == null) {
+     currentPred.next = null;
+    }
+    // if it's in the middle of the list
+    else {
+      currentPred.next = currentPred.next.next;
+    }
+  }
+
+  /**
+   * Start loop with x = head.next, not x = head. Otherwise the same.
+   * @return the String representation of this list.
+   */
+  public String toString() {
+    String result = "";
+    
+    for (Element<T> x = head.next; x != null; x = x.next) 
+      result += x.toString() + "\n"; 
+    
+    return result;
+  }
+
+  /**
+   * Similar to SLL. Start x with head.next instead of head in for loop.
+   * @param T
+   */
+  public boolean contains(T obj) {
+    Element<T> x;
+  
+    for (x = head.next; x != null && !x.data.equals(obj); x = x.next);
+  
+    // We dropped out of the loop either because we ran off the end of the list
+    // (in which case x == null) or because we found s (and so x != null).
+    for (currentPred = head; currentPred.next.data != x.data; currentPred = currentPred.next);
+    currentPred.next = x;
+  
+    return x != null;
+  }
+
+  /**
+   * checks if there's nothing in the list apart from the dummy head.
+   * (no where else will the previous of the current be empty)
+   * @return boolean
+   */
+  public boolean isEmpty() {
+    return currentPred == null;
+  }
+  
+  /**
+   * checks if the current exists (i.e., currentPred.next isn't empty)
+   * @return boolean
+   */
+  public boolean hasCurrent() {
+    return currentPred.next != null;
+  }
+  
+  
+  /**
+   * If it has a current object and the currentPred's next's next isn't null.
+   * i.e., if currentPred is the last item, current is actually null. if currentPred is
+   * the second-to-last, the current is the last, so current doesn't actually have a next.
+   * @return boolean
+   */
+  public boolean hasNext() {
+    return (hasCurrent() && currentPred.next.next != null);
+  }
+  
+  /**
+   * Almost the same as SLL, except return head.next.data, no need to involve currentPred
+   * @return T
+   */
+  public T getFirst() { 
+    if(isEmpty()) {
+      System.err.println("The list is empty");
+      return null;
+    }
+    // set current to first item in list and return its data
+    currentPred = head;
+    return head.next.data;
+  }
+  
+  /**
+   * Gets last element in the linked list. 
+   * @param T
+   */
+  public T getLast() {
+   // Copying the dummy head reference onto temp so I can loop.
+   Element <T> temp;
+   temp = head;
+   
+    if (isEmpty()) {
+      System.err.println("The list is empty");
+      return null;
+    }
+    // loop through and when the next reference is null, you've found the last element. return its data.
+    else {
+      while (temp.next.next != null) {
+       temp = temp.next;
+      }
+      currentPred = temp;
+      return temp.next.data;
+    }
+    
+  }
+
+  /**
+   * Set the currentPred to the dummy head and call add on it.
+   * @param T
+   */
+  public void addFirst(T obj) {
+   Element<T> x = new Element<T>(obj);
+   
+   // make sure current is first item in list and add x after head.
+   currentPred = head;
+   x.next = head.next;
+   head.next = x;
+    currentPred.next = x;
+    
+  }
+
+  /**
+   * Should be the same for SLL as for HeaderSLL
+   * @param T
+   */
+  public void addLast(T obj) {
+    if(isEmpty())
+      addFirst(obj);
+    else {
+      getLast();
+      add(obj);
+    }
+  }
+  
+  /**
+   * Almost the same as SLL (change current to currentPred.next).
+   * @return T
+   */
+  public T get() {
+    if (hasCurrent()) {
+     // get current's data
+      return currentPred.next.data;
+    }
+    else {
+      System.err.println("No current item");
+      return null;
+    }
+
+  }
+  
+  /**
+   * Almost the same as SLL. Same modification as above.
+   * @param T 
+   */
+  public void set(T obj) {
+    if (hasCurrent())
+     currentPred.next.data = obj;
+    else
+      System.err.println("No current item");
+  }
+  
+  /**
+   * Similar as SLL.
+   * @return T
+   */
+  public T next() {
+    if (hasNext()) {
+     // go next and get it's data
+      currentPred = currentPred.next;
+      return currentPred.next.data;
+    }
+    else {
+      System.err.println("No next item");
+      return null;
+    }
+  }
+}
