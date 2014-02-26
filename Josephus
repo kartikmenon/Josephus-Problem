@@ -1,0 +1,149 @@
+import java.util.Scanner;
+
+
+/**
+ * @author Kartik Menon
+ * October 6, 2013
+ * Code to simulate Josephus trickily killing his soldiers.
+ */
+
+public class Josephus {
+ private Soldier firstSoldier;
+ private Soldier updateSoldier;
+ 
+  /**
+   * Private inner class to deal with representing each individual soldier
+   * each soldier as a data item "line" which is basically their number
+   * in the circle. They also have next and previous references.
+   * @author kartikeyamenon
+   *
+   */
+ private static class Soldier {
+  public Soldier next;
+  public Soldier previous;
+  public int line;
+  
+  /**
+   * constructor for soldier
+   * @param number
+   */
+  public Soldier(int number) {
+   next = null;
+   previous = null;
+   number = line;
+  }
+  
+  /**
+   * basically the same as the 'remove method,' but I wanted to call it "kill"
+   * @param prefix
+   * @param suffix
+   */
+  public void kill(String prefix, String suffix) {
+   next.previous = previous;
+   previous.next = next;
+   System.out.println(prefix + line + suffix);
+  }
+ }
+ 
+ /**
+  * constructor for Josephus problem. Takes two functions defined below.
+  * @param number
+  * @param k
+  * @param prefix
+  * @param suffix
+  */
+ public Josephus(int number, int k, String prefix, String suffix) {
+  createArmy(number);
+  killAll(k, number, prefix, suffix);
+  
+ }
+ 
+ /**
+  * Creating everybody! (according to a parameter of input)
+  * gives an error if input less than two
+  * @param number
+  */
+ public void createArmy(int number) {
+
+  // error
+  if (number < 2) {
+   System.err.println("Need more than one soldier");
+   return;
+  }
+  
+  // looping around and creating all the soldiers
+  for (int j = 1; j < number + 1; j++) {
+   Soldier currentSoldier = new Soldier(number); // making the new soldier
+   currentSoldier.line = j; // setting his relevant position in line
+   
+   // this if-statement will only be hit on the first iteration of the loop.
+   // creates the first soldier.
+   if (firstSoldier == null) {
+    firstSoldier = currentSoldier;
+   }
+   
+   // this is the main part, keeps tying together the next soldier and the current
+   // the next soldier is denoted 'updateSoldier'
+   if (updateSoldier != null) {
+    updateSoldier.next = currentSoldier;
+    currentSoldier.previous = updateSoldier;
+   }
+   
+   // moving up in line
+   updateSoldier = currentSoldier;
+  }
+  
+  // loop is over, tie together the first soldier and the last soldier
+  // (here, updateSoldier represents the last soldier)
+  firstSoldier.previous = updateSoldier;
+  updateSoldier.next = firstSoldier;
+ }
+ 
+ /**
+  * Advancing through the soldiers at a specified input interval
+  * @param k
+  */
+ public void advance(int k) {
+  for (int i = 0; i < k; i++) {
+   updateSoldier = updateSoldier.next;
+  }
+ }
+ 
+ /**
+  * killing everybody!
+  * @param k
+  * @param number
+  * @param prefix
+  * @param suffix
+  */
+ public void killAll(int k, int number, String prefix, String suffix) {
+  
+  // move through all soldiers and kill them, print out which one dies each time
+  // because the "kill" method of the Soldier class has a print statement.
+  for(int i = 0; i < number - 1; i++) {
+   advance(k);
+   updateSoldier.kill(prefix, suffix);
+  }
+  
+  // give the number of the last soldier alive, Josephus.
+  System.out.println("The last remaining soldier is: " + updateSoldier.next.line);
+ }
+ 
+ 
+ public static void main(String[] args) {
+  int number;
+  int k;
+  
+ 
+  Scanner input = new Scanner(System.in);
+  System.out.print("Enter a number of soldiers greater than 2: ");
+  number = input.nextInt();
+  
+  System.out.print("Enter the spacing between soldiers to die: ");
+  k = input.nextInt();
+  
+  new Josephus(number, k, "Soldier ", " kicks the bucket.");
+ }
+}
+
+
